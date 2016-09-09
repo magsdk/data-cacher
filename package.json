@@ -1,0 +1,30 @@
+{
+    "name": "mag-data-cacher",
+    "version": "1.0.0",
+    "description": "Caches data in a predetermined range.",
+    "author": {
+        "name": "Stoian Roman",
+        "email": "stoyan.roman@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@192.168.1.222:/web/magsdk/data-cacher.git"
+    },
+    "scripts": {
+        "lint": "eslint *.js"
+    },
+    "dependencies": {
+        "stb-rc": "stbsdk/rc"
+    },
+    "devDependencies": {
+        "mag-eslint-config": "magsdk/eslint-config"
+    },
+    "keywords": [
+        "mag",
+        "magsdk",
+        "framework",
+        "data",
+        "cacher"
+    ],
+    "license": "MIT"
+}
