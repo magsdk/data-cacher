@@ -11,12 +11,14 @@
         "url": "git@192.168.1.222:/web/magsdk/data-cacher.git"
     },
     "scripts": {
-        "lint": "eslint *.js"
+        "lint": "eslint .",
+        "test": "npm run lint"
     },
     "dependencies": {
         "stb-rc": "stbsdk/rc"
     },
     "devDependencies": {
+        "eslint": "2.*.*",
         "mag-eslint-config": "magsdk/eslint-config"
     },
     "keywords": [
