@@ -7,7 +7,7 @@
 
 'use strict';
 
-var rc      = require('stbsdk/rc'),
+var keys    = require('stb-keys'),
     blocked = false,
     delta   = 0;
 
@@ -64,7 +64,6 @@ function DataCacher ( config ) {
 
 // inheritance
 DataCacher.prototype.constructor = DataCacher;
-
 
 
 /**
@@ -125,8 +124,8 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 blocked = false;
             }, this.config);
             break;
-        case rc.codes.right:
-        case rc.codes.down:
+        case keys.right:
+        case keys.down:
             if ( blocked ) {
                 break;
             }
@@ -143,7 +142,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkNext(callback);
             }
             break;
-        case rc.codes.pageDown:
+        case keys.pageDown:
             if ( blocked ) {
                 break;
             }
@@ -160,8 +159,8 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkNext(callback);
             }
             break;
-        case rc.codes.left:
-        case rc.codes.up:
+        case keys.left:
+        case keys.up:
             if ( blocked ) {
                 break;
             }
@@ -178,7 +177,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkPrev(callback);
             }
             break;
-        case rc.codes.pageUp:
+        case keys.pageUp:
             if ( blocked ) {
                 break;
             }
@@ -195,13 +194,13 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkPrev(callback);
             }
             break;
-        case rc.codes.home:
+        case keys.home:
             if ( blocked ) {
                 break;
             }
             this.goHome(callback);
             break;
-        case rc.codes.end:
+        case keys.end:
             if ( blocked ) {
                 break;
             }
