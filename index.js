@@ -290,7 +290,6 @@ DataCacher.prototype.checkNext = function ( cb ) {
             blocked = false;
         }, this.config);
     }
-
 };
 
 
