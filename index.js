@@ -11,7 +11,6 @@ var keys    = require('stb-keys'),
     blocked = false,
     delta   = 0;
 
-
 /**
  * Data cacher
  *
@@ -21,7 +20,7 @@ var keys    = require('stb-keys'),
  *
  * @param {Object}   config          		init parameters (all inherited from the parent)
  * @param {function} config.getter      	method to get data for cache
- * @param {object}   [config.request={}]    request params for getter
+ * @param {Object}   [config.request={}]    request params for getter
  * @param {number}   config.pageSize=5  	amount of items on a page
  * @param {number}   [config.stepSize=5]  	step size (default 1)
  * @param {number}   [config.cacheSize=2]  	amount of cached pages (default 1)
@@ -88,23 +87,24 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 if ( this.config.limit <= 0 ) {
                     this.config.limit = 2 * this.cacheSize;
                 }
-            } else {
-                if ( this.config.limit <= 0 ) {
-                    this.config.limit = this.cacheSize;
-                }
+            } else if ( this.config.limit <= 0 ) {
+                this.config.limit = this.cacheSize;
             }
-            this.getter(function ( e, data, maxCount ) {
+            this.getter(function ( error, data, maxCount ) {
                 if ( self.headItem && !self.config.offset ) {
                     data.unshift(self.headItem);
                     delta = 1;
                 }
                 self.lastCheccked = time.getTime();
-                if ( !e ) {
+                if ( error ) {
+                    callback(true, data);
+                } else {
                     self.maxCount = maxCount;
                     self.data = data;
                     self.tail = self.head + data.length;
                     if ( self.maxCount && self.head >= self.maxCount ) {
                         self.goEnd(callback, true);
+
                         return;
                     }
                     if ( data.length < self.config.limit ) {
@@ -112,13 +112,11 @@ DataCacher.prototype.get = function ( direction, callback ) {
                     }
                     if ( self.pos + self.size < self.data.length ) {
                         receivedData = self.data.slice(self.pos, self.pos + self.size);
-                        callback(e, receivedData);
+                        callback(error, receivedData);
                         self.checkNext();
                     } else {
                         self.checkNext(callback);
                     }
-                } else {
-                    callback(true, data);
                 }
 
                 blocked = false;
@@ -132,6 +130,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
             this.pos += this.stepSize;
             if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
                 this.refreshData(callback);
+
                 return;
             }
             if ( this.pos + this.size < this.data.length ) {
@@ -149,6 +148,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
             this.pos += this.size - 1;
             if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
                 this.refreshData(callback);
+
                 return;
             }
             if ( this.pos + this.size < this.data.length ) {
@@ -167,6 +167,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
             this.pos -= this.stepSize;
             if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
                 this.refreshData(callback);
+
                 return;
             }
             if ( this.pos >= 0 ) {
@@ -184,6 +185,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
             this.pos -= this.size - 1;
             if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
                 this.refreshData(callback);
+
                 return;
             }
             if ( this.pos > 0 ) {
@@ -224,6 +226,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
         if ( this.pos > this.data.length - this.size ) {
             if ( this.cycle ) {
                 this.goHome(cb);
+
                 return;
             }
 
@@ -235,6 +238,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
         if ( cb ) {
             cb(false, this.data.slice(this.pos, this.pos + this.size));
         }
+
         return;
     }
 
@@ -252,6 +256,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
                     cb(false, self.data.slice(self.pos, self.pos + self.size));
                 }
                 this.botEmptyLine = true;
+
                 return;
             }
         }
@@ -260,8 +265,8 @@ DataCacher.prototype.checkNext = function ( cb ) {
         if ( cb ) {
             blocked = true;
         }
-        this.getter(function ( e, data, maxCount ) {
-            if ( !e ) {
+        this.getter(function ( error, data, maxCount ) {
+            if ( !error ) {
                 self.maxCount = maxCount;
                 if ( data.length < count ) {
                     self.botEmptyLine = true;
@@ -285,7 +290,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
             }
             self.lastCheccked = time.getTime();
             if ( cb ) {
-                cb(e, self.data.slice(self.pos, self.pos + self.size));
+                cb(error, self.data.slice(self.pos, self.pos + self.size));
             }
             blocked = false;
         }, this.config);
@@ -317,8 +322,8 @@ DataCacher.prototype.checkPrev = function ( cb ) {
             if ( cb ) {
                 blocked = true;
             }
-            this.getter(function ( e, data, maxCount ) {
-                if ( !e ) {
+            this.getter(function ( error, data, maxCount ) {
+                if ( !error ) {
                     self.maxCount = maxCount;
                     self.data = data.concat(self.data);
                     if ( self.config.offset === 0 && self.headItem && self.data[0] !== self.headItem ) {
@@ -335,7 +340,7 @@ DataCacher.prototype.checkPrev = function ( cb ) {
                 }
                 self.lastCheccked = time.getTime();
                 if ( cb ) {
-                    cb(e, self.data.slice(self.pos, self.pos + self.size));
+                    cb(error, self.data.slice(self.pos, self.pos + self.size));
                 }
                 blocked = false;
             }, this.config);
@@ -348,6 +353,7 @@ DataCacher.prototype.checkPrev = function ( cb ) {
         if ( this.pos < 0 ) {
             if ( this.cycle ) {
                 this.goEnd(cb);
+
                 return;
             }
             this.pos = 0;
@@ -374,6 +380,7 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
         this.pos = 0;
         if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
             this.refreshData(callback);
+
             return;
         }
         receivedData = this.data.slice(this.pos, this.pos + this.size);
@@ -384,8 +391,8 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
         this.head = 0;
         this.config.offset = 0;
         this.config.limit = this.cacheSize;
-        this.getter(function ( e, data, maxCount ) {
-            if ( !e ) {
+        this.getter(function ( error, data, maxCount ) {
+            if ( !error ) {
                 self.maxCount = maxCount;
                 self.data = data;
                 if ( self.headItem && self.data[0] !== self.headItem ) {
@@ -397,7 +404,7 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
                 self.botEmptyLine = false;
             }
             self.lastCheccked = time.getTime();
-            callback(e, receivedData, 0);
+            callback(error, receivedData, 0);
         }, this.config);
     }
 };
@@ -418,11 +425,12 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
     if ( this.maxCount ) {
         if ( this.tail === this.maxCount && !refresh ) {
             if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
-                this.refreshData(function (e) {
-                    if ( !e ) {
-                        this.goEnd(callback);
+                this.refreshData(function ( error ) {
+                    if ( !error ) {
+                        self.goEnd(callback);
                     }
                 });
+
                 return;
             }
             self.pos = self.data.length - self.size;
@@ -444,8 +452,8 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
             }
             this.config.offset = this.head;
             this.config.limit = 2 * this.cacheSize;
-            this.getter(function ( e, data, maxCount ) {
-                if ( !e ) {
+            this.getter(function ( error, data, maxCount ) {
+                if ( !error ) {
                     self.maxCount = maxCount;
                     self.data = data;
                     self.pos = self.data.length - self.size;
@@ -462,7 +470,7 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
                     blocked = false;
                 }
                 self.lastCheccked = time.getTime();
-                callback(e, receivedData, pos);
+                callback(error, receivedData, pos);
             }, this.config);
         }
     } else {
@@ -487,20 +495,23 @@ DataCacher.prototype.refreshData = function ( callback ) {
     this.config.offset = this.head;
     this.config.limit = this.tail - this.head;
     if ( this.config.limit <= 0 ) {
-        this.config.limit = this.config.offset === 0? this.cacheSize : 2 * this.cacheSize;
+        this.config.limit = this.config.offset === 0 ? this.cacheSize : 2 * this.cacheSize;
     }
-    this.getter(function ( e, data, maxCount ) {
+    this.getter(function ( error, data, maxCount ) {
         if ( self.headItem && !self.config.offset ) {
             data.unshift(self.headItem);
             delta = 1;
         }
-        if ( !e ) {
+        if ( error ) {
+            callback(error, data);
+        } else {
             self.lastCheccked = time.getTime();
             self.maxCount = maxCount;
             self.data = data;
             self.tail = self.head + data.length;
             if ( self.maxCount && self.head >= self.maxCount ) {
                 self.goEnd(callback, true);
+
                 return;
             }
             if ( data.length < self.config.limit ) {
@@ -508,13 +519,11 @@ DataCacher.prototype.refreshData = function ( callback ) {
             }
             if ( self.pos + self.size < self.data.length ) {
                 receivedData = self.data.slice(self.pos, self.pos + self.size);
-                callback(e, receivedData);
+                callback(error, receivedData);
                 self.checkNext();
             } else {
                 self.checkNext(callback);
             }
-        } else {
-            callback(e, data);
         }
     }, this.config);
 
