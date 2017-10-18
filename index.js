@@ -30,13 +30,12 @@ var keys    = require('stb-keys'),
  *
  * @example
  * var DataCacher = require('mag-data-cacher'),
- *      cacher = new DataCacher({
- *          pageSize: 7,
- *          cacheSize: 2,
- *          request: {},
- *          getter: function ( callback, config, count ) {}
- *      });
- *
+ *     cacher = new DataCacher({
+ *         pageSize: 7,
+ *         cacheSize: 2,
+ *         request: {},
+ *         getter: function ( callback, config, count ) {}
+ *     });
  */
 function DataCacher ( config ) {
     config = config || {};
