@@ -29,14 +29,13 @@ var keys    = require('stb-keys'),
  * @param {boolean}  [config.cycle=true]    allow or not to jump to the opposite side of a list when there is nowhere to go next
  *
  * @example
- * var DataCacher = require('stb/data.cacher'),
- *		cacher    = new Provider({
- *			pageSize: 7,
- *			cacheSize: 2,
- *			request: {},
- *			getter: function ( callback, config, count ) {}
- *		});
- *
+ * var DataCacher = require('mag-data-cacher'),
+ *     cacher = new DataCacher({
+ *         pageSize: 7,
+ *         cacheSize: 2,
+ *         request: {},
+ *         getter: function ( callback, config, count ) {}
+ *     });
  */
 function DataCacher ( config ) {
     config = config || {};
@@ -51,7 +50,7 @@ function DataCacher ( config ) {
     this.botEmptyLine = false;
     this.maxCount = config.count || 0;
     this.headItem = config.headItem;
-    this.lastCheccked = 0;
+    this.lastChecked = 0;
     this.checkTime = config.checkTime * 1000 || 0;
 
     this.cycle = config.cycle;
@@ -95,7 +94,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                     data.unshift(self.headItem);
                     delta = 1;
                 }
-                self.lastCheccked = time.getTime();
+                self.lastChecked = time.getTime();
                 if ( error ) {
                     callback(true, data);
                 } else {
@@ -128,7 +127,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 break;
             }
             this.pos += this.stepSize;
-            if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+            if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
 
                 return;
@@ -146,7 +145,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 break;
             }
             this.pos += this.size - 1;
-            if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+            if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
 
                 return;
@@ -165,7 +164,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 break;
             }
             this.pos -= this.stepSize;
-            if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+            if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
 
                 return;
@@ -183,7 +182,7 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 break;
             }
             this.pos -= this.size - 1;
-            if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+            if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
 
                 return;
@@ -288,7 +287,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
                     }
                 }
             }
-            self.lastCheccked = time.getTime();
+            self.lastChecked = time.getTime();
             if ( cb ) {
                 cb(error, self.data.slice(self.pos, self.pos + self.size));
             }
@@ -338,7 +337,7 @@ DataCacher.prototype.checkPrev = function ( cb ) {
                         self.botEmptyLine = false;
                     }
                 }
-                self.lastCheccked = time.getTime();
+                self.lastChecked = time.getTime();
                 if ( cb ) {
                     cb(error, self.data.slice(self.pos, self.pos + self.size));
                 }
@@ -378,7 +377,7 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
 
     if ( this.head === 0 && !refresh ) {
         this.pos = 0;
-        if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+        if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
             this.refreshData(callback);
 
             return;
@@ -403,7 +402,7 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
                 blocked = false;
                 self.botEmptyLine = false;
             }
-            self.lastCheccked = time.getTime();
+            self.lastChecked = time.getTime();
             callback(error, receivedData, 0);
         }, this.config);
     }
@@ -424,7 +423,7 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
 
     if ( this.maxCount ) {
         if ( this.tail === this.maxCount && !refresh ) {
-            if ( this.checkTime && time.getTime() > this.lastCheccked + this.checkTime ) {
+            if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(function ( error ) {
                     if ( !error ) {
                         self.goEnd(callback);
@@ -469,7 +468,7 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
                     self.botEmptyLine = true;
                     blocked = false;
                 }
-                self.lastCheccked = time.getTime();
+                self.lastChecked = time.getTime();
                 callback(error, receivedData, pos);
             }, this.config);
         }
@@ -505,7 +504,7 @@ DataCacher.prototype.refreshData = function ( callback ) {
         if ( error ) {
             callback(error, data);
         } else {
-            self.lastCheccked = time.getTime();
+            self.lastChecked = time.getTime();
             self.maxCount = maxCount;
             self.data = data;
             self.tail = self.head + data.length;
