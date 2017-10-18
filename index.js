@@ -18,23 +18,25 @@ var keys    = require('stb-keys'),
  *
  * @constructor
  *
- * @param {Object}   config          		init parameters (all inherited from the parent)
- * @param {function} config.getter      	method to get data for cache
+ * @param {Object}   config                 init parameters (all inherited from the parent)
+ * @param {function} config.getter          method to get data for cache
  * @param {Object}   [config.request={}]    request params for getter
- * @param {number}   config.pageSize=5  	amount of items on a page
- * @param {number}   [config.stepSize=5]  	step size (default 1)
- * @param {number}   [config.cacheSize=2]  	amount of cached pages (default 1)
- * @param {number}   [config.count=100]    	length of cached list
- * @param {number}   [config.checkTime=100] Aging data time in seconds
+ * @param {number}   config.pageSize=5      amount of items on a page
+ * @param {number}   [config.stepSize=5]    step size (default 1)
+ * @param {number}   [config.cacheSize=2]   amount of cached pages (default 1)
+ * @param {number}   [config.count=100]     length of cached list
+ * @param {number}   [config.checkTime=100] aging data time in seconds
  * @param {boolean}  [config.cycle=true]    allow or not to jump to the opposite side of a list when there is nowhere to go next
  *
  * @example
  * var DataCacher = require('mag-data-cacher'),
- *     cacher = new DataCacher({
+ *     dataCacher = new DataCacher({
  *         pageSize: 7,
  *         cacheSize: 2,
  *         request: {},
- *         getter: function ( callback, config, count ) {}
+ *         getter: function ( callback, config, count ) {
+ *             // ...
+ *         }
  *     });
  */
 function DataCacher ( config ) {
