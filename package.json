@@ -16,10 +16,10 @@
         "jsdoc": "jsdoc --destination docs *.js readme.md"
     },
     "dependencies": {
-        "stb-keys": "1.*.*"
+        "stb-keys": "^1.4.3"
     },
     "devDependencies": {
-        "jsdoc": "3.*.*",
+        "jsdoc": "^3.5.5",
         "mag-eslint": "^1.0.0"
     },
     "keywords": [
