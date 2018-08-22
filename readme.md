@@ -30,7 +30,7 @@ In some event handler:
 
 ```js
 var DataCacher = require('mag-data-cacher'),
-    cacher     = new DataCacher({
+    dataCacher = new DataCacher({
         pageSize: 7,
         cacheSize: 2,
         request: {},
@@ -40,6 +40,35 @@ var DataCacher = require('mag-data-cacher'),
     });
 ```
 
+To check and get data for next page:
+
+```js
+dataCacher.checkPrev(callback);
+```
+
+To check and get data for previous page:
+
+```js
+dataCacher.checkNext(callback);
+```
+
+To check and get 1st page:
+
+```js
+dataCacher.goHome(callback);
+```
+
+To check and get last page:
+
+```js
+dataCacher.goEnd(callback);
+```
+
+To refresh data:
+
+```js
+dataCacher.refreshData(callback);
+```
 
 ## Contribution ##
 
