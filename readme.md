@@ -20,7 +20,7 @@ npm install mag-data-cacher
 
 ## Usage ##
 
-Add to the scope:
+Add the constructor to the scope:
 
 ```js
 var DataCacher = require('mag-data-cacher');
@@ -29,8 +29,7 @@ var DataCacher = require('mag-data-cacher');
 In some event handler:
 
 ```js
-var DataCacher = require('mag-data-cacher'),
-    dataCacher = new DataCacher({
+var dataCacher = new DataCacher({
         pageSize: 7,
         cacheSize: 2,
         request: {},
@@ -43,6 +42,11 @@ var DataCacher = require('mag-data-cacher'),
 To check and get data for next page:
 
 ```js
+var callback = function ( error, receivedData ) {
+    console.log(error);
+    console.log(receivedData);
+};
+
 dataCacher.checkPrev(callback);
 ```
 
@@ -52,13 +56,13 @@ To check and get data for previous page:
 dataCacher.checkNext(callback);
 ```
 
-To check and get 1st page:
+To check and get data for 1st page:
 
 ```js
 dataCacher.goHome(callback);
 ```
 
-To check and get last page:
+To check and get data for last page:
 
 ```js
 dataCacher.goEnd(callback);
