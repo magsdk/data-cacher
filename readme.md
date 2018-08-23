@@ -26,7 +26,7 @@ Add the constructor to the scope:
 var DataCacher = require('mag-data-cacher');
 ```
 
-In some event handler:
+Create instance with custom config:
 
 ```js
 var dataCacher = new DataCacher({
