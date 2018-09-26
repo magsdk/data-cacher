@@ -85,10 +85,10 @@ DataCacher.prototype.get = function ( direction, callback ) {
             //this.config.offset = this.pos;
             if ( this.config.offset ) {
                 this.head = this.config.offset;
-                if ( this.config.limit <= 0 ) {
+                if ( !this.config.limit || this.config.limit < 0 ) {
                     this.config.limit = 2 * this.cacheSize;
                 }
-            } else if ( this.config.limit <= 0 ) {
+            } else if ( !this.config.limit || this.config.limit < 0 ) {
                 this.config.limit = this.cacheSize;
             }
             this.getter(function ( error, data, maxCount ) {
