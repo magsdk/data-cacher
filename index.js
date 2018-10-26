@@ -8,7 +8,6 @@
 'use strict';
 
 var keys    = require('stb-keys'),
-    blocked = false,
     delta   = 0;
 
 /**
@@ -57,8 +56,8 @@ function DataCacher ( config ) {
 
     this.cycle = config.cycle;
     this.getter = config.getter;
+    this.blocked = false;
 
-    blocked = false;
     delta = 0;
 }
 
@@ -78,10 +77,13 @@ DataCacher.prototype.get = function ( direction, callback ) {
         receivedData = [],
         time = new Date();
 
+    if ( this.blocked ) {
+        return;
+    }
 
     switch ( direction ) {
         case null:
-            blocked = true;
+            this.blocked = true;
             //this.config.offset = this.pos;
             if ( this.config.offset ) {
                 this.head = this.config.offset;
@@ -120,14 +122,12 @@ DataCacher.prototype.get = function ( direction, callback ) {
                     }
                 }
 
-                blocked = false;
+                self.blocked = false;
             }, this.config);
             break;
+
         case keys.right:
         case keys.down:
-            if ( blocked ) {
-                break;
-            }
             this.pos += this.stepSize;
             if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
@@ -142,10 +142,8 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkNext(callback);
             }
             break;
+
         case keys.pageDown:
-            if ( blocked ) {
-                break;
-            }
             this.pos += this.size - 1;
             if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
@@ -160,11 +158,9 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkNext(callback);
             }
             break;
+
         case keys.left:
         case keys.up:
-            if ( blocked ) {
-                break;
-            }
             this.pos -= this.stepSize;
             if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
@@ -179,10 +175,8 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 this.checkPrev(callback);
             }
             break;
+
         case keys.pageUp:
-            if ( blocked ) {
-                break;
-            }
             this.pos -= this.size - 1;
             if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(callback);
@@ -198,15 +192,9 @@ DataCacher.prototype.get = function ( direction, callback ) {
             }
             break;
         case keys.home:
-            if ( blocked ) {
-                break;
-            }
             this.goHome(callback);
             break;
         case keys.end:
-            if ( blocked ) {
-                break;
-            }
             this.goEnd(callback);
             break;
     }
@@ -263,9 +251,7 @@ DataCacher.prototype.checkNext = function ( cb ) {
         }
         this.config.limit = count;
         this.config.offset = this.tail - delta;
-        if ( cb ) {
-            blocked = true;
-        }
+        this.blocked = true;
         this.getter(function ( error, data, maxCount ) {
             if ( !error ) {
                 self.maxCount = maxCount;
@@ -290,10 +276,10 @@ DataCacher.prototype.checkNext = function ( cb ) {
                 }
             }
             self.lastChecked = time.getTime();
+            self.blocked = false;
             if ( cb ) {
                 cb(error, self.data.slice(self.pos, self.pos + self.size));
             }
-            blocked = false;
         }, this.config);
     }
 };
@@ -320,9 +306,8 @@ DataCacher.prototype.checkPrev = function ( cb ) {
                 count -= delta;
             }
             this.config.limit = count;
-            if ( cb ) {
-                blocked = true;
-            }
+
+            this.blocked = true;
             this.getter(function ( error, data, maxCount ) {
                 if ( !error ) {
                     self.maxCount = maxCount;
@@ -340,10 +325,10 @@ DataCacher.prototype.checkPrev = function ( cb ) {
                     }
                 }
                 self.lastChecked = time.getTime();
+                self.blocked = false;
                 if ( cb ) {
                     cb(error, self.data.slice(self.pos, self.pos + self.size));
                 }
-                blocked = false;
             }, this.config);
         }
     } else {
@@ -387,7 +372,7 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
         receivedData = this.data.slice(this.pos, this.pos + this.size);
         callback(false, receivedData, 0);
     } else {
-        blocked = true;
+        this.blocked = true;
         this.pos = 0;
         this.head = 0;
         this.config.offset = 0;
@@ -401,10 +386,10 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
                 }
                 self.tail = self.data.length;
                 receivedData = self.data.slice(self.pos, self.pos + self.size);
-                blocked = false;
                 self.botEmptyLine = false;
             }
             self.lastChecked = time.getTime();
+            self.blocked = false;
             callback(error, receivedData, 0);
         }, this.config);
     }
@@ -446,7 +431,7 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
             self.botEmptyLine = true;
             callback(false, receivedData, pos);
         } else {
-            blocked = true;
+            this.blocked = true;
             this.head = this.maxCount - 2 * this.cacheSize;
             if ( this.head < 0 ) {
                 this.head = 0;
@@ -468,8 +453,8 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
                         pos = 0;
                     }
                     self.botEmptyLine = true;
-                    blocked = false;
                 }
+                self.blocked = false;
                 self.lastChecked = time.getTime();
                 callback(error, receivedData, pos);
             }, this.config);
@@ -493,11 +478,14 @@ DataCacher.prototype.refreshData = function ( callback ) {
     if ( this.pos < 0 ) {
         this.pos = 0;
     }
+
     this.config.offset = this.head;
     this.config.limit = this.tail - this.head;
     if ( this.config.limit <= 0 ) {
         this.config.limit = this.config.offset === 0 ? this.cacheSize : 2 * this.cacheSize;
     }
+
+    this.blocked = true;
     this.getter(function ( error, data, maxCount ) {
         if ( self.headItem && !self.config.offset ) {
             data.unshift(self.headItem);
@@ -526,6 +514,7 @@ DataCacher.prototype.refreshData = function ( callback ) {
                 self.checkNext(callback);
             }
         }
+        self.blocked = false;
     }, this.config);
 
 };
