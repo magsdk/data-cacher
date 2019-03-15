@@ -49,7 +49,8 @@ function DataCacher ( config ) {
     this.cacheSize = ( config.cacheSize || 2 ) * this.size;
     this.config = config.request || {};
     this.botEmptyLine = false;
-    this.maxCount = config.count || 0;
+    this.count = config.count || 0;
+    this.maxCount = this.count + (config.headItem ? 1 : 0);
     this.headItem = config.headItem;
     this.lastChecked = 0;
     this.checkTime = config.checkTime * 1000 || 0;
@@ -102,10 +103,11 @@ DataCacher.prototype.get = function ( direction, callback ) {
                 if ( error ) {
                     callback(true, data);
                 } else {
-                    self.maxCount = maxCount;
+                    self.count = maxCount;
+                    self.maxCount = maxCount + (self.headItem ? 1 : 0);
                     self.data = data;
                     self.tail = self.head + data.length;
-                    if ( self.maxCount && self.head >= self.maxCount ) {
+                    if ( self.count && self.head >= self.count ) {
                         self.goEnd(callback, true);
 
                         return;
@@ -232,8 +234,8 @@ DataCacher.prototype.checkNext = function ( cb ) {
     }
 
     if ( count >= this.size ) {
-        if ( this.maxCount && count + this.tail > this.maxCount ) {
-            count = this.maxCount - this.tail;
+        if ( this.count && count + this.tail > this.count ) {
+            count = this.count - this.tail;
             if ( count <= 0 ) {
                 if ( self.pos > self.data.length - self.size ) {
                     self.pos = self.data.length - self.size;
@@ -254,7 +256,8 @@ DataCacher.prototype.checkNext = function ( cb ) {
         this.blocked = true;
         this.getter(function ( error, data, maxCount ) {
             if ( !error ) {
-                self.maxCount = maxCount;
+                self.count = maxCount;
+                self.maxCount = maxCount + (self.headItem ? 1 : 0);
                 if ( data.length < count ) {
                     self.botEmptyLine = true;
                 }
@@ -310,7 +313,8 @@ DataCacher.prototype.checkPrev = function ( cb ) {
             this.blocked = true;
             this.getter(function ( error, data, maxCount ) {
                 if ( !error ) {
-                    self.maxCount = maxCount;
+                    self.count = maxCount;
+                    self.maxCount = maxCount + (self.headItem ? 1 : 0);
                     self.data = data.concat(self.data);
                     if ( self.config.offset === 0 && self.headItem && self.data[0] !== self.headItem ) {
                         self.data.unshift(self.headItem);
@@ -379,7 +383,8 @@ DataCacher.prototype.goHome = function ( callback, refresh ) {
         this.config.limit = this.cacheSize;
         this.getter(function ( error, data, maxCount ) {
             if ( !error ) {
-                self.maxCount = maxCount;
+                self.count = maxCount;
+                self.maxCount = maxCount + (self.headItem ? 1 : 0);
                 self.data = data;
                 if ( self.headItem && self.data[0] !== self.headItem ) {
                     self.data.unshift(self.headItem);
@@ -408,8 +413,8 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
         pos,
         time = new Date();
 
-    if ( this.maxCount ) {
-        if ( this.tail === this.maxCount && !refresh ) {
+    if ( this.count ) {
+        if ( this.tail === this.count && !refresh ) {
             if ( this.checkTime && time.getTime() > this.lastChecked + this.checkTime ) {
                 this.refreshData(function ( error ) {
                     if ( !error ) {
@@ -432,7 +437,7 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
             callback(false, receivedData, pos);
         } else {
             this.blocked = true;
-            this.head = this.maxCount - 2 * this.cacheSize;
+            this.head = this.count - 2 * this.cacheSize;
             if ( this.head < 0 ) {
                 this.head = 0;
             }
@@ -440,8 +445,12 @@ DataCacher.prototype.goEnd = function ( callback, refresh ) {
             this.config.limit = 2 * this.cacheSize;
             this.getter(function ( error, data, maxCount ) {
                 if ( !error ) {
-                    self.maxCount = maxCount;
+                    self.count = maxCount;
+                    self.maxCount = maxCount + (self.headItem ? 1 : 0);
                     self.data = data;
+                    if ( self.head === 0 && self.headItem && self.data[0] !== self.headItem ) {
+                        self.data.unshift(self.headItem);
+                    }
                     self.pos = self.data.length - self.size;
                     self.tail = self.head + data.length;
                     if ( self.pos < 0 ) {
@@ -495,10 +504,11 @@ DataCacher.prototype.refreshData = function ( callback ) {
             callback(error, data);
         } else {
             self.lastChecked = time.getTime();
-            self.maxCount = maxCount;
+            self.count = maxCount;
+            self.maxCount = maxCount + (self.headItem ? 1 : 0);
             self.data = data;
             self.tail = self.head + data.length;
-            if ( self.maxCount && self.head >= self.maxCount ) {
+            if ( self.count && self.head >= self.count ) {
                 self.goEnd(callback, true);
 
                 return;
